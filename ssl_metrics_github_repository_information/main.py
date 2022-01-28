@@ -375,6 +375,7 @@ def main() -> None:
                         bar.next()
                     else:
                         bar.max = bar.max - rowCountDifference
+                        bar.update()
 
                 try:
                     lastPage: dict = resp.links["last"]
