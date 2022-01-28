@@ -1,7 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from json import dump
-
-import pandas
 from pandas import DataFrame
 from requests import Response, post
 
