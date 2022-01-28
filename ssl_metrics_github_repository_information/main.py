@@ -43,7 +43,7 @@ def get_argparse() -> Namespace:
         help="Maximum number of stars a repository must have",
         type=int,
         required=False,
-        default=1000,
+        default=1000000000,
     )
     parser.add_argument(
         "--topic",
@@ -57,7 +57,7 @@ def get_argparse() -> Namespace:
 
 
 def callREST(maxStars: int, minStars: int, topic: str, token: str, page: int = 1) -> Response:
-    apiURL: str = f"https://api.github.com/search/repositories?q=stars:{minStars}..{maxStars}+topic:{topic}&sort=stars&order=asc&per_page=100&page={page}"
+    apiURL: str = f"https://api.github.com/search/repositories?q=stars:{minStars}..{maxStars}+topic:{topic}&sort=stars&per_page=100&page={page}"
     requestHeaders: dict = {
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "ssl-metrics-github-repository-information",
