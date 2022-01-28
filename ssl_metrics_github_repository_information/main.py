@@ -1,21 +1,21 @@
 from argparse import ArgumentParser, Namespace
-from wsgiref import headers
 
-from requests import Response
-from requests import get
+import pandas
+from pandas import DataFrame
+from requests import Response, get, post
+
 
 def get_argparse() -> Namespace:
     parser: ArgumentParser = ArgumentParser(
         prog="SSL Metrics GitHub Repository Information",
-        usage="Gather information about GitHub repositories by leveraging the GitHub REST and GraphQL libraries",
+        usage="Gather information about a GitHub from the GitHub GraphQL API",
     )
     parser.add_argument(
-        "-l",
-        "--list",
-        help="List of repositories to analyze",
+        "-i",
+        "--input",
+        help="A specific repository to be analyzed. Must be in format OWNER/REPO",
         type=str,
-        required=False,
-        default=None,
+        required=True
     )
     parser.add_argument(
         "-o",
@@ -25,12 +25,11 @@ def get_argparse() -> Namespace:
         required=True,
     )
     parser.add_argument(
-        "-r",
-        "--repository",
-        help="A specific repository to be analyzed. Must be in format OWNER/REPO",
+        "-t",
+        "--token",
+        help="GitHub personal access token",
         type=str,
-        required=False,
-        default=None,
+        required=True,
     )
     parser.add_argument(
         "--min-stars",
@@ -42,41 +41,72 @@ def get_argparse() -> Namespace:
 
     return parser.parse_args()
 
-def call_REST(topic: str, stars: int, token: str)    ->  Response:
-    url: str = "https://api.github.com/search/repositories?q=topic:{} + stars:>={}&sort=stars&order=asc&per_page=100&page={}"
-    headers: dict
+def callGraphQL(owner: str, repo: str, token: str)    ->  Response:
+    apiURL: str = f"https://api.github.com/graphql"
+    requestHeaders: dict = {
+        "Authorization": f"bearer {token}",
+    }
+    query: str = '{repository(owner: "' + owner + '", name: "' + repo + '''") {
+        ... on Repository {
+            nameWithOwner
+            url
+            repositoryTopics(first: 100) {
+                nodes {
+                    topic {
+                        name
+                        }
+                    }
+                }
+            object(expression: "HEAD") {
+                ... on Commit {
+                    history {
+                        totalCount
+                        }
+                    }
+                }
+            issues {
+                totalCount
+                }
+            pullRequests {
+                totalCount
+            }
+            stargazerCount
+            forkCount
+            watchers {
+                totalCount
+            }
+            licenseInfo {
+                name
+                pseudoLicense
+            }
+        }
+    }
+}'''
 
-    return get()
+    json: dict = {
+        "query": query,
+        "variables": ""
+    }
 
-def call_GraphQL(owner: str, repo: str, stars: int, token: str)    ->  Response:
+    return post(url=apiURL, headers=requestHeaders, json=json)
+
+def flattenJSON(json: dict) ->  DataFrame:
     pass
 
 def main() -> None:
     args: Namespace = get_argparse()
 
-    if (args.list is None) and (args.repository is None):
-        print("Please input a TXT file of reposorities or a specific repository to analyze")
-        quit(1)
-
     if args.output[-5::] != ".json":
             print("Invalid output file type. Output file must be JSON")
-            quit(2)
-
-    try:
-        if args.list[-4::] != ".txt":
-            print("Invalid input file type. Input file must be TXT")
-            quit(3)
-    except TypeError:
-        pass
-
-    if (args.list is not None) and (args.repository is not None):
-        print("A list of repositories and a specific repository have been inputted. The list of repositories will be analyzed")
+            quit(1)
 
     if args.min_stars < 0:
         args.min_stars = 0
 
 
 
+    r: Response = callGraphQL("numpy", "numpy", token=args.token)
+    print(type(r.json()))
 
 if __name__ == "__main__":
     main()
