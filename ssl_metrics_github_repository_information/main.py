@@ -2,7 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from pandas import DataFrame
 from requests import Response, get, post
-
+from progress.bar import Bar
+from progress.spinner import Spinner
 
 def get_argparse() -> Namespace:
     parser: ArgumentParser = ArgumentParser(
@@ -39,6 +40,13 @@ def get_argparse() -> Namespace:
         default=0,
     )
     parser.add_argument(
+        "--max-stars",
+        help="Maximum number of stars a repository must have",
+        type=int,
+        required=False,
+        default=1000,
+    )
+    parser.add_argument(
         "--topic",
         help="Topic to scrape (up to) the top 1000 repositories from",
         type=str,
@@ -49,15 +57,15 @@ def get_argparse() -> Namespace:
     return parser.parse_args()
 
 
-def callREST(stars: int, topic: str, token: str, page: int = 1) -> Response:
-    apiURL: str = f"https://api.github.com/search/repositories?q=stars:{stars}+topic:{topic}&sort=stars&order=asc&per_page=100&page={page}"
+def callREST(maxStars: int, minStars: int, topic: str, token: str, page: int = 1) -> Response:
+    apiURL: str = f"https://api.github.com/search/repositories?q=stars:{minStars}..{maxStars}+topic:{topic}&sort=stars&order=asc&per_page=100&page={page}"
     requestHeaders: dict = {
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "ssl-metrics-github-repository-information",
         "Authorization": f"token {token}",
     }
 
-    return get(url=apiURL, headers=requestHeaders)
+    return  get(url=apiURL, headers=requestHeaders)
 
 
 def callGraphQL(owner: str, repo: str, token: str) -> Response:
@@ -132,9 +140,13 @@ def flattenJSON(json: dict, df: DataFrame) -> DataFrame:
         root["stargazerCount"],
         root["forkCount"],
         root["watchers"]["totalCount"],
-        root["licenseInfo"]["name"].strip(),
-        root["licenseInfo"]["pseudoLicense"],
     ]
+    try:
+        data.append(root["licenseInfo"]["name"])
+        data.append(root["licenseInfo"]["pseudoLicense"])
+    except TypeError:
+        data.append(None)
+        data.append(False)
 
     df.loc[len(df)] = data
 
@@ -176,7 +188,7 @@ def main() -> None:
     ]
     df: DataFrame = DataFrame(columns=columns)
 
-    if args.repository is None:
+    if args.topic is None:
         splitRepository: list = args.repository.split("/")
         owner: str = splitRepository[0]
         repo: str = splitRepository[1]
@@ -184,8 +196,38 @@ def main() -> None:
         response: Response = callGraphQL(owner=owner, repo=repo, token=args.token)
         json = response.json()
 
-        flat: DataFrame = flattenJSON(json=json)
-        flat.T.to_json(args.output)
+        flat: DataFrame = flattenJSON(json=json, df=df)
+
+    else:
+        currentPage: int = 1
+        with Bar(message=f"Getting repositories from topic {args.topic}", max=1000) as bar:
+            while True:
+                resp: Response = callREST(maxStars=args.max_stars, minStars=args.min_stars, topic=args.topic, token=args.token, page=currentPage)
+
+                json: dict = resp.json()
+
+                bar.max = json["total_count"]
+
+                for item in json["items"]:
+                    owner: str = item["owner"]["login"]
+                    repo: str = item["name"]
+
+                    graphQLResponse: Response = callGraphQL(owner=owner, repo=repo, token=args.token)
+                    graphQLJSON: dict = graphQLResponse.json()
+
+                    flat: DataFrame = flattenJSON(json=graphQLJSON, df=df)
+
+                    bar.next()
+
+                try:
+                    lastPage: dict = resp.links["last"]
+                except KeyError:
+                    break
+                else:
+                    currentPage+= 1
+
+
+    flat.T.to_json(args.output)
 
 
 if __name__ == "__main__":
