@@ -6,10 +6,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="ssl-metrics-MODULE-NAME",
-    packages=["ssl_metrics_MODULE_NAME"],
+    name="ssl-metrics-github-repository-information",
+    packages=["ssl_metrics_repository_information"],
     version=version.version(),
-    description="SSL Metrics - SHORT DESCRIPTION",
+    description="SSL Metrics - GitHub Repository Scraper",
     author="Software and Systems Laboratory - Loyola University Chicago",
     author_email="ssl-metrics@ssl.luc.edu",
     license="BSD",
@@ -48,12 +48,13 @@ setup(
     ],
     python_requires=">=3.9",
     install_requires=[
-        # ADD ME
+        "requests",
+        "pandas",
+        "progress",
     ],
     entry_points={
         "console_scripts": [
-            "ssl-metrics-MODULE-NAME-collect = ssl_metrics_MODULE_NAME.FILENAME:main",
-            "ssl-metrics-MODULE-NAME-graph = ssl_metrics_MODULE_NAME.create_graph:main",
+            "ssl-metrics-repository-information-collect = ssl_metrics_repository_information.main:main",
         ]
     },
 )
