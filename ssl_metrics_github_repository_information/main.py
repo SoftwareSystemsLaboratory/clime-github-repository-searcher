@@ -68,7 +68,10 @@ def callREST(maxStars: int, minStars: int, topic: str, token: str, page: int = 1
     return  get(url=apiURL, headers=requestHeaders)
 
 
-def callGraphQL(owner: str, repo: str, token: str) -> Response:
+def callGraphQL(owner: str, repo: str, token: str, verbose: bool = True) -> Response:
+    if verbose:
+        print(f"Getting information on {owner}/{repo}")
+
     apiURL: str = f"https://api.github.com/graphql"
     requestHeaders: dict = {
         "Authorization": f"bearer {token}",
@@ -212,7 +215,7 @@ def main() -> None:
                     owner: str = item["owner"]["login"]
                     repo: str = item["name"]
 
-                    graphQLResponse: Response = callGraphQL(owner=owner, repo=repo, token=args.token)
+                    graphQLResponse: Response = callGraphQL(owner=owner, repo=repo, token=args.token, verbose=False)
                     graphQLJSON: dict = graphQLResponse.json()
 
                     flat: DataFrame = flattenJSON(json=graphQLJSON, df=df)
