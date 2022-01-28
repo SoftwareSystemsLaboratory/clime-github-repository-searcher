@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 import pandas
 from pandas import DataFrame
-from requests import Response, get, post
+from requests import Response, post
 
 
 def get_argparse() -> Namespace:
