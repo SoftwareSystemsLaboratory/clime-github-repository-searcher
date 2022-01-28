@@ -389,8 +389,6 @@ def main() -> None:
                         maxIssues=args.max_issues,
                         minPullRequests=args.min_pull_requests,
                         maxPullRequests=args.max_pull_requests,
-                        minForks=args.min_forks,
-                        maxForks=args.max_forks,
                         minWatchers=args.min_watchers,
                         maxWatchers=args.max_watchers,
                     )
