@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from json import dump
 
 import pandas
 from pandas import DataFrame
@@ -54,9 +55,13 @@ def callGraphQL(owner: str, repo: str, token: str) -> Response:
         + repo
         + """") {
         ... on Repository {
-            nameWithOwner
+            owner {
+                login
+            }
+            name
             url
             repositoryTopics(first: 100) {
+                totalCount
                 nodes {
                     topic {
                         name
@@ -96,7 +101,30 @@ def callGraphQL(owner: str, repo: str, token: str) -> Response:
 
 
 def flattenJSON(json: dict) -> DataFrame:
-    pass
+    columns: list = ['owner', 'repository', 'url', 'topicCount', 'topics', 'totalCommits', 'totalIssues', 'totalPullRequests', 'stargazerCount', 'forkCount', 'watchers', 'licenseName', 'isPseudoLicense']
+    df: DataFrame = DataFrame(columns=columns)
+
+    root: dict = json["data"]["repository"]
+
+    data: list = [
+        root["owner"]["login"],
+        root["name"],
+        root["url"],
+        root["repositoryTopics"]["totalCount"],
+        ','.join([x["topic"]["name"] for x in root["repositoryTopics"]["nodes"]]),
+        root["object"]["history"]["totalCount"],
+        root["issues"]["totalCount"],
+        root["pullRequests"]["totalCount"],
+        root["stargazerCount"],
+        root["forkCount"],
+        root["watchers"]["totalCount"],
+        root["licenseInfo"]["name"].strip(),
+        root["licenseInfo"]["pseudoLicense"],
+    ]
+
+    df.loc[len(df)] = data
+
+    return df
 
 
 def main() -> None:
@@ -109,9 +137,11 @@ def main() -> None:
     if args.min_stars < 0:
         args.min_stars = 0
 
-    r: Response = callGraphQL("numpy", "numpy", token=args.token)
-    print(type(r.json()))
+    response: Response = callGraphQL("numpy", "numpy", token=args.token)
+    json = response.json()
 
+    flat: DataFrame = flattenJSON(json=json)
+    flat.T.to_json(args.output)
 
 if __name__ == "__main__":
     main()
