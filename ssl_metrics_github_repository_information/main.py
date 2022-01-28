@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
+
 from pandas import DataFrame
-from requests import Response, post
+from requests import Response, get, post
 
 
 def get_argparse() -> Namespace:
@@ -9,11 +10,12 @@ def get_argparse() -> Namespace:
         usage="Gather information about a GitHub from the GitHub GraphQL API",
     )
     parser.add_argument(
-        "-i",
-        "--input",
+        "-r",
+        "--repository",
         help="A specific repository to be analyzed. Must be in format OWNER/REPO",
         type=str,
-        required=True,
+        required=False,
+        default=None,
     )
     parser.add_argument(
         "-o",
@@ -36,8 +38,26 @@ def get_argparse() -> Namespace:
         required=False,
         default=0,
     )
+    parser.add_argument(
+        "--topic",
+        help="Topic to scrape (up to) the top 1000 repositories from",
+        type=str,
+        required=False,
+        default=None,
+    )
 
     return parser.parse_args()
+
+
+def callREST(stars: int, topic: str, token: str, page: int = 1) -> Response:
+    apiURL: str = f"https://api.github.com/search/repositories?q=stars:{stars}+topic:{topic}&sort=stars&order=asc&per_page=100&page={page}"
+    requestHeaders: dict = {
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "ssl-metrics-github-repository-information",
+        "Authorization": f"token {token}",
+    }
+
+    return get(url=apiURL, headers=requestHeaders)
 
 
 def callGraphQL(owner: str, repo: str, token: str) -> Response:
@@ -97,10 +117,7 @@ def callGraphQL(owner: str, repo: str, token: str) -> Response:
     return post(url=apiURL, headers=requestHeaders, json=json)
 
 
-def flattenJSON(json: dict) -> DataFrame:
-    columns: list = ['owner', 'repository', 'url', 'topicCount', 'topics', 'totalCommits', 'totalIssues', 'totalPullRequests', 'stargazerCount', 'forkCount', 'watchers', 'licenseName', 'isPseudoLicense']
-    df: DataFrame = DataFrame(columns=columns)
-
+def flattenJSON(json: dict, df: DataFrame) -> DataFrame:
     root: dict = json["data"]["repository"]
 
     data: list = [
@@ -108,7 +125,7 @@ def flattenJSON(json: dict) -> DataFrame:
         root["name"],
         root["url"],
         root["repositoryTopics"]["totalCount"],
-        ','.join([x["topic"]["name"] for x in root["repositoryTopics"]["nodes"]]),
+        ",".join([x["topic"]["name"] for x in root["repositoryTopics"]["nodes"]]),
         root["object"]["history"]["totalCount"],
         root["issues"]["totalCount"],
         root["pullRequests"]["totalCount"],
@@ -127,18 +144,49 @@ def flattenJSON(json: dict) -> DataFrame:
 def main() -> None:
     args: Namespace = get_argparse()
 
+    if (args.repository is None) and (args.topic is None):
+        print("Input either a repository or a topic to analyze")
+        quit(1)
+
+    if (args.repository is not None) and (args.topic is not None):
+        print("Input either a repository or a topic to analyze")
+        quit(2)
+
     if args.output[-5::] != ".json":
         print("Invalid output file type. Output file must be JSON")
-        quit(1)
+        quit(3)
 
     if args.min_stars < 0:
         args.min_stars = 0
 
-    response: Response = callGraphQL("numpy", "numpy", token=args.token)
-    json = response.json()
+    columns: list = [
+        "owner",
+        "repository",
+        "url",
+        "topicCount",
+        "topics",
+        "totalCommits",
+        "totalIssues",
+        "totalPullRequests",
+        "stargazerCount",
+        "forkCount",
+        "watchers",
+        "licenseName",
+        "isPseudoLicense",
+    ]
+    df: DataFrame = DataFrame(columns=columns)
 
-    flat: DataFrame = flattenJSON(json=json)
-    flat.T.to_json(args.output)
+    if args.repository is None:
+        splitRepository: list = args.repository.split("/")
+        owner: str = splitRepository[0]
+        repo: str = splitRepository[1]
+
+        response: Response = callGraphQL(owner=owner, repo=repo, token=args.token)
+        json = response.json()
+
+        flat: DataFrame = flattenJSON(json=json)
+        flat.T.to_json(args.output)
+
 
 if __name__ == "__main__":
     main()
