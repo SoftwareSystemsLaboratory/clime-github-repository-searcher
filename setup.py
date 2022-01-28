@@ -1,6 +1,6 @@
 from setuptools import setup
 
-from ssl_metrics_MODULE_NAME import version
+from ssl_metrics_github_repository_information import version
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
