@@ -339,8 +339,10 @@ def main() -> None:
                 )
 
                 json: dict = resp.json()
+                maxRecords: int = json["total_count"]
 
-                bar.max = json["total_count"]
+                if maxRecords <= 1000:
+                    bar.max = maxRecords
 
                 for item in json["items"]:
                     expectedRowCount: int = df.shape[0] + 1

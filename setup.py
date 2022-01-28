@@ -54,7 +54,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "ssl-metrics-repository-information-collect = ssl_metrics_repository_information.main:main",
+            "ssl-metrics-repository-information-collect = ssl_metrics_github_repository_information.main:main",
         ]
     },
 )
