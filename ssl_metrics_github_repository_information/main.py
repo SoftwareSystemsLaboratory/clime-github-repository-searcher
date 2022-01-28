@@ -15,7 +15,7 @@ def get_argparse() -> Namespace:
         "--input",
         help="A specific repository to be analyzed. Must be in format OWNER/REPO",
         type=str,
-        required=True
+        required=True,
     )
     parser.add_argument(
         "-o",
@@ -41,12 +41,18 @@ def get_argparse() -> Namespace:
 
     return parser.parse_args()
 
-def callGraphQL(owner: str, repo: str, token: str)    ->  Response:
+
+def callGraphQL(owner: str, repo: str, token: str) -> Response:
     apiURL: str = f"https://api.github.com/graphql"
     requestHeaders: dict = {
         "Authorization": f"bearer {token}",
     }
-    query: str = '{repository(owner: "' + owner + '", name: "' + repo + '''") {
+    query: str = (
+        '{repository(owner: "'
+        + owner
+        + '", name: "'
+        + repo
+        + """") {
         ... on Repository {
             nameWithOwner
             url
@@ -81,32 +87,31 @@ def callGraphQL(owner: str, repo: str, token: str)    ->  Response:
             }
         }
     }
-}'''
+}"""
+    )
 
-    json: dict = {
-        "query": query,
-        "variables": ""
-    }
+    json: dict = {"query": query, "variables": ""}
 
     return post(url=apiURL, headers=requestHeaders, json=json)
 
-def flattenJSON(json: dict) ->  DataFrame:
+
+def flattenJSON(json: dict) -> DataFrame:
     pass
+
 
 def main() -> None:
     args: Namespace = get_argparse()
 
     if args.output[-5::] != ".json":
-            print("Invalid output file type. Output file must be JSON")
-            quit(1)
+        print("Invalid output file type. Output file must be JSON")
+        quit(1)
 
     if args.min_stars < 0:
         args.min_stars = 0
 
-
-
     r: Response = callGraphQL("numpy", "numpy", token=args.token)
     print(type(r.json()))
+
 
 if __name__ == "__main__":
     main()
