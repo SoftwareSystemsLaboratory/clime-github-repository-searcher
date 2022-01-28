@@ -1,8 +1,9 @@
 from argparse import ArgumentParser, Namespace
 
 from pandas import DataFrame
-from requests import Response, get, post
 from progress.bar import Bar
+from requests import Response, get, post
+
 
 def get_argparse() -> Namespace:
     parser: ArgumentParser = ArgumentParser(
@@ -13,6 +14,13 @@ def get_argparse() -> Namespace:
         "-r",
         "--repository",
         help="A specific repository to be analyzed. Must be in format OWNER/REPO",
+        type=str,
+        required=False,
+        default=None,
+    )
+    parser.add_argument(
+        "--topic",
+        help="Topic to scrape (up to) the top 1000 repositories from",
         type=str,
         required=False,
         default=None,
@@ -46,17 +54,68 @@ def get_argparse() -> Namespace:
         default=1000000000,
     )
     parser.add_argument(
-        "--topic",
-        help="Topic to scrape (up to) the top 1000 repositories from",
-        type=str,
+        "--min-commits",
+        help="Minimum number of commits a repository must have",
+        type=int,
         required=False,
-        default=None,
+        default=0,
+    )
+    parser.add_argument(
+        "--max-commits",
+        help="Maximum number of commits a repository must have",
+        type=int,
+        required=False,
+        default=1000000000,
+    )
+    parser.add_argument(
+        "--min-issues",
+        help="Minimum number of issues a repository must have",
+        type=int,
+        required=False,
+        default=0,
+    )
+    parser.add_argument(
+        "--max-issues",
+        help="Maximum number of issues a repository must have",
+        type=int,
+        required=False,
+        default=1000000000,
+    )
+    parser.add_argument(
+        "--min-forks",
+        help="Minimum number of forks a repository must have",
+        type=int,
+        required=False,
+        default=0,
+    )
+    parser.add_argument(
+        "--max-forks",
+        help="Maximum number of forks a repository must have",
+        type=int,
+        required=False,
+        default=1000000000,
+    )
+    parser.add_argument(
+        "--min-watchers",
+        help="Minimum number of watchers a repository must have",
+        type=int,
+        required=False,
+        default=0,
+    )
+    parser.add_argument(
+        "--max-watchers",
+        help="Maximum number of watchers a repository must have",
+        type=int,
+        required=False,
+        default=1000000000,
     )
 
     return parser.parse_args()
 
 
-def callREST(maxStars: int, minStars: int, topic: str, token: str, page: int = 1) -> Response:
+def callREST(
+    maxStars: int, minStars: int, topic: str, token: str, page: int = 1
+) -> Response:
     apiURL: str = f"https://api.github.com/search/repositories?q=stars:{minStars}..{maxStars}+topic:{topic}&sort=stars&per_page=100&page={page}"
     requestHeaders: dict = {
         "Accept": "application/vnd.github.v3+json",
@@ -64,7 +123,7 @@ def callREST(maxStars: int, minStars: int, topic: str, token: str, page: int = 1
         "Authorization": f"token {token}",
     }
 
-    return  get(url=apiURL, headers=requestHeaders)
+    return get(url=apiURL, headers=requestHeaders)
 
 
 def callGraphQL(owner: str, repo: str, token: str, verbose: bool = True) -> Response:
@@ -127,7 +186,21 @@ def callGraphQL(owner: str, repo: str, token: str, verbose: bool = True) -> Resp
     return post(url=apiURL, headers=requestHeaders, json=json)
 
 
-def flattenJSON(json: dict, df: DataFrame) -> DataFrame:
+def flattenJSON(
+    json: dict,
+    df: DataFrame,
+    minCommits: int,
+    maxCommits: int,
+    minIssues: int,
+    maxIssues: int,
+    minPullRequests: int,
+    maxPullRequests: int,
+    minForks: int,
+    maxForks: int,
+    minWatchers: int,
+    maxWatchers: int,
+) -> DataFrame:
+
     root: dict = json["data"]["repository"]
 
     data: list = [
@@ -136,13 +209,39 @@ def flattenJSON(json: dict, df: DataFrame) -> DataFrame:
         root["url"],
         root["repositoryTopics"]["totalCount"],
         ",".join([x["topic"]["name"] for x in root["repositoryTopics"]["nodes"]]),
-        root["object"]["history"]["totalCount"],
-        root["issues"]["totalCount"],
-        root["pullRequests"]["totalCount"],
-        root["stargazerCount"],
-        root["forkCount"],
-        root["watchers"]["totalCount"],
     ]
+
+    commits: int = root["object"]["history"]["totalCount"]
+    issues: int = root["issues"]["totalCount"]
+    pullRequests: int = root["pullRequests"]["totalCount"]
+    forks: int = root["forkCount"]
+    watchers: int = root["watchers"]["totalCount"]
+
+    if (commits >= minCommits) and (commits <= maxCommits):
+        data.append(commits)
+    else:
+        return df
+
+    if (issues >= minIssues) and (issues <= maxIssues):
+        data.append(issues)
+    else:
+        return df
+
+    if (pullRequests >= minPullRequests) and (pullRequests <= maxPullRequests):
+        data.append(pullRequests)
+    else:
+        return df
+
+    if (forks >= minForks) and (forks <= maxForks):
+        data.append(forks)
+    else:
+        return df
+
+    if (watchers >= minWatchers) and (watchers <= maxWatchers):
+        data.append(watchers)
+    else:
+        return df
+
     try:
         data.append(root["licenseInfo"]["name"])
         data.append(root["licenseInfo"]["pseudoLicense"])
@@ -169,9 +268,6 @@ def main() -> None:
     if args.output[-5::] != ".json":
         print("Invalid output file type. Output file must be JSON")
         quit(3)
-
-    if args.min_stars < 0:
-        args.min_stars = 0
 
     columns: list = [
         "owner",
@@ -202,9 +298,17 @@ def main() -> None:
 
     else:
         currentPage: int = 1
-        with Bar(message=f"Getting repositories from topic {args.topic}", max=1000) as bar:
+        with Bar(
+            message=f"Getting repositories from topic {args.topic}", max=1000
+        ) as bar:
             while True:
-                resp: Response = callREST(maxStars=args.max_stars, minStars=args.min_stars, topic=args.topic, token=args.token, page=currentPage)
+                resp: Response = callREST(
+                    maxStars=args.max_stars,
+                    minStars=args.min_stars,
+                    topic=args.topic,
+                    token=args.token,
+                    page=currentPage,
+                )
 
                 json: dict = resp.json()
 
@@ -214,7 +318,9 @@ def main() -> None:
                     owner: str = item["owner"]["login"]
                     repo: str = item["name"]
 
-                    graphQLResponse: Response = callGraphQL(owner=owner, repo=repo, token=args.token, verbose=False)
+                    graphQLResponse: Response = callGraphQL(
+                        owner=owner, repo=repo, token=args.token, verbose=False
+                    )
                     graphQLJSON: dict = graphQLResponse.json()
 
                     flat: DataFrame = flattenJSON(json=graphQLJSON, df=df)
@@ -226,8 +332,7 @@ def main() -> None:
                 except KeyError:
                     break
                 else:
-                    currentPage+= 1
-
+                    currentPage += 1
 
     flat.T.to_json(args.output)
 
