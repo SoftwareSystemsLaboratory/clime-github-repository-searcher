@@ -345,8 +345,9 @@ def main() -> None:
 
     else:
         currentPage: int = 1
+        message: str = f"Getting repositories from topic {args.topic}"
         with Bar(
-            message=f"Getting repositories from topic {args.topic}", max=1000
+            message=message, max=1000
         ) as bar:
             while True:
                 resp: Response = callREST(
@@ -368,6 +369,9 @@ def main() -> None:
 
                 if maxRecords <= 1000:
                     bar.max = maxRecords
+                else:
+                    bar.message = message + f" (top {bar.max})"
+                    bar.update()
 
                 for item in json["items"]:
                     expectedRowCount: int = df.shape[0] + 1
