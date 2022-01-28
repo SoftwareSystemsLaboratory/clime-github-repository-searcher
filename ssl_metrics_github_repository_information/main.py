@@ -82,6 +82,20 @@ def get_argparse() -> Namespace:
         default=1000000000,
     )
     parser.add_argument(
+        "--min-pull-requests",
+        help="Minimum number of pull requests a repository must have",
+        type=int,
+        required=False,
+        default=0,
+    )
+    parser.add_argument(
+        "--max-pull-requests",
+        help="Maximum number of pull requests a repository must have",
+        type=int,
+        required=False,
+        default=1000000000,
+    )
+    parser.add_argument(
         "--min-forks",
         help="Minimum number of forks a repository must have",
         type=int,
@@ -209,6 +223,7 @@ def flattenJSON(
         root["url"],
         root["repositoryTopics"]["totalCount"],
         ",".join([x["topic"]["name"] for x in root["repositoryTopics"]["nodes"]]),
+        root["stargazerCount"],
     ]
 
     commits: int = root["object"]["history"]["totalCount"]
@@ -275,10 +290,10 @@ def main() -> None:
         "url",
         "topicCount",
         "topics",
+        "stargazerCount",
         "totalCommits",
         "totalIssues",
         "totalPullRequests",
-        "stargazerCount",
         "forkCount",
         "watchers",
         "licenseName",
@@ -315,6 +330,8 @@ def main() -> None:
                 bar.max = json["total_count"]
 
                 for item in json["items"]:
+                    expectedRowCount: int = df.shape[0] + 1
+
                     owner: str = item["owner"]["login"]
                     repo: str = item["name"]
 
@@ -323,9 +340,26 @@ def main() -> None:
                     )
                     graphQLJSON: dict = graphQLResponse.json()
 
-                    flat: DataFrame = flattenJSON(json=graphQLJSON, df=df)
-
-                    bar.next()
+                    flat: DataFrame = flattenJSON(
+                        json=graphQLJSON,
+                        df=df,
+                        minCommits=args.min_commits,
+                        maxCommits=args.max_commits,
+                        minIssues=args.min_issues,
+                        maxIssues=args.max_issues,
+                        minPullRequests=args.min_pull_requests,
+                        maxPullRequests=args.max_pull_requests,
+                        minForks=args.min_forks,
+                        maxForks=args.max_forks,
+                        minWatchers=args.min_watchers,
+                        maxWatchers=args.max_watchers,
+                    )
+                    actualRowCount: int = df.shape[0]
+                    rowCountDifference: int = expectedRowCount - actualRowCount
+                    if rowCountDifference == 0:
+                        bar.next()
+                    else:
+                        bar.max = bar.max - rowCountDifference
 
                 try:
                     lastPage: dict = resp.links["last"]
