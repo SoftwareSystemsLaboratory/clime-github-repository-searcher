@@ -200,7 +200,7 @@ def callGraphQL(owner: str, repo: str, token: str, verbose: bool = True) -> Resp
     return post(url=apiURL, headers=requestHeaders, json=json)
 
 
-def flattenJSON(
+def analyzeJSON(
     json: dict,
     df: DataFrame,
     minCommits: int,
@@ -309,7 +309,20 @@ def main() -> None:
         response: Response = callGraphQL(owner=owner, repo=repo, token=args.token)
         json = response.json()
 
-        flat: DataFrame = flattenJSON(json=json, df=df)
+        flat: DataFrame = analyzeJSON(
+            json=json,
+            df=df,
+            minCommits=args.min_commits,
+            maxCommits=args.max_commits,
+            minIssues=args.min_issues,
+            maxIssues=args.max_issues,
+            minPullRequests=args.min_pull_requests,
+            maxPullRequests=args.max_pull_requests,
+            minForks=args.min_forks,
+            maxForks=args.max_forks,
+            minWatchers=args.min_watchers,
+            maxWatchers=args.max_watchers,
+        )
 
     else:
         currentPage: int = 1
@@ -340,7 +353,7 @@ def main() -> None:
                     )
                     graphQLJSON: dict = graphQLResponse.json()
 
-                    flat: DataFrame = flattenJSON(
+                    flat: DataFrame = analyzeJSON(
                         json=graphQLJSON,
                         df=df,
                         minCommits=args.min_commits,
