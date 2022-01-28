@@ -402,6 +402,7 @@ def main() -> None:
                         bar.next()
                     else:
                         bar.max = bar.max - rowCountDifference
+                        bar.message = message + f" (top {bar.max})"
                         bar.update()
 
                 try:
