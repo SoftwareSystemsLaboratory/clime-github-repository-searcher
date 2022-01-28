@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response, get, post
-
+from datetime import datetime
 
 def get_argparse() -> Namespace:
     parser: ArgumentParser = ArgumentParser(
@@ -123,14 +123,42 @@ def get_argparse() -> Namespace:
         required=False,
         default=1000000000,
     )
+    parser.add_argument(
+        "--min-created-date",
+        help="Minimum date of creation a repository must have",
+        type=str,
+        required=False,
+        default="1970-01-01",
+    )
+    parser.add_argument(
+        "--max-created-date",
+        help="Maximum date of creation a repository must have",
+        type=str,
+        required=False,
+        default=datetime.now().strftime("%Y-%m-%d"),
+    )
+    parser.add_argument(
+        "--min-pushed-date",
+        help="Minimum date of the latest push a repository must have",
+        type=str,
+        required=False,
+        default="1970-01-01",
+    )
+    parser.add_argument(
+        "--max-pushed-date",
+        help="Maximum date of the latest push a repository must have",
+        type=str,
+        required=False,
+        default=datetime.now().strftime("%Y-%m-%d"),
+    )
 
     return parser.parse_args()
 
 
 def callREST(
-    maxStars: int, minStars: int, topic: str, token: str, page: int = 1
+    maxStars: int, minStars: int, maxForks: int, minForks: int, topic: str, minCreationDate:str, maxCreationDate:str, minPushedDate:str, maxPushedDate:str, token: str, page: int = 1,
 ) -> Response:
-    apiURL: str = f"https://api.github.com/search/repositories?q=stars:{minStars}..{maxStars}+topic:{topic}&sort=stars&per_page=100&page={page}"
+    apiURL: str = f"https://api.github.com/search/repositories?q=stars:{minStars}..{maxStars}+forks:{minForks}..{maxForks}+created:{minCreationDate}..{maxCreationDate}+pushed:{minPushedDate}..{maxPushedDate}+topic:{topic}&sort=stars&per_page=100&page={page}"
     requestHeaders: dict = {
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "ssl-metrics-github-repository-information",
@@ -209,8 +237,6 @@ def analyzeJSON(
     maxIssues: int,
     minPullRequests: int,
     maxPullRequests: int,
-    minForks: int,
-    maxForks: int,
     minWatchers: int,
     maxWatchers: int,
 ) -> DataFrame:
@@ -224,12 +250,12 @@ def analyzeJSON(
         root["repositoryTopics"]["totalCount"],
         ",".join([x["topic"]["name"] for x in root["repositoryTopics"]["nodes"]]),
         root["stargazerCount"],
+        root["forkCount"],
     ]
 
     commits: int = root["object"]["history"]["totalCount"]
     issues: int = root["issues"]["totalCount"]
     pullRequests: int = root["pullRequests"]["totalCount"]
-    forks: int = root["forkCount"]
     watchers: int = root["watchers"]["totalCount"]
 
     if (commits >= minCommits) and (commits <= maxCommits):
@@ -244,11 +270,6 @@ def analyzeJSON(
 
     if (pullRequests >= minPullRequests) and (pullRequests <= maxPullRequests):
         data.append(pullRequests)
-    else:
-        return df
-
-    if (forks >= minForks) and (forks <= maxForks):
-        data.append(forks)
     else:
         return df
 
@@ -291,10 +312,10 @@ def main() -> None:
         "topicCount",
         "topics",
         "stargazerCount",
+        "forkCount",
         "totalCommits",
         "totalIssues",
         "totalPullRequests",
-        "forkCount",
         "watchers",
         "licenseName",
         "isPseudoLicense",
@@ -333,6 +354,10 @@ def main() -> None:
                 resp: Response = callREST(
                     maxStars=args.max_stars,
                     minStars=args.min_stars,
+                    minCreationDate=args.min_creation_date,
+                    maxCreationDate=args.max_creation_date,
+                    minPushedDate=args.min_pushed_date,
+                    maxPushedDate=args.max_pushed_date,
                     topic=args.topic,
                     token=args.token,
                     page=currentPage,
