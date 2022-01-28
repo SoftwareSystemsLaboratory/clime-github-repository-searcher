@@ -352,8 +352,10 @@ def main() -> None:
                 resp: Response = callREST(
                     maxStars=args.max_stars,
                     minStars=args.min_stars,
-                    minCreationDate=args.min_creation_date,
-                    maxCreationDate=args.max_creation_date,
+                    maxForks=args.max_forks,
+                    minForks=args.min_forks,
+                    minCreationDate=args.min_created_date,
+                    maxCreationDate=args.max_created_date,
                     minPushedDate=args.min_pushed_date,
                     maxPushedDate=args.max_pushed_date,
                     topic=args.topic,
