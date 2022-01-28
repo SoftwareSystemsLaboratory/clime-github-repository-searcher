@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="ssl-metrics-github-repository-information",
-    packages=["ssl_metrics_repository_information"],
+    packages=["ssl_metrics_github_repository_information"],
     version=version.version(),
     description="SSL Metrics - GitHub Repository Scraper",
     author="Software and Systems Laboratory - Loyola University Chicago",
