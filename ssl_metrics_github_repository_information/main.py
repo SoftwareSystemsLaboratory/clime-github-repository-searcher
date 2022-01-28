@@ -1,5 +1,8 @@
 from argparse import ArgumentParser, Namespace
+from wsgiref import headers
 
+from requests import Response
+from requests import get
 
 def get_argparse() -> Namespace:
     parser: ArgumentParser = ArgumentParser(
@@ -27,11 +30,26 @@ def get_argparse() -> Namespace:
         help="A specific repository to be analyzed. Must be in format OWNER/REPO",
         type=str,
         required=False,
-        default=None
+        default=None,
+    )
+    parser.add_argument(
+        "--min-stars",
+        help="Minimum number of stars a repository must have",
+        type=int,
+        required=False,
+        default=0,
     )
 
     return parser.parse_args()
 
+def call_REST(topic: str, stars: int, token: str)    ->  Response:
+    url: str = "https://api.github.com/search/repositories?q=topic:{} + stars:>={}&sort=stars&order=asc&per_page=100&page={}"
+    headers: dict
+
+    return get()
+
+def call_GraphQL(owner: str, repo: str, stars: int, token: str)    ->  Response:
+    pass
 
 def main() -> None:
     args: Namespace = get_argparse()
@@ -53,6 +71,9 @@ def main() -> None:
 
     if (args.list is not None) and (args.repository is not None):
         print("A list of repositories and a specific repository have been inputted. The list of repositories will be analyzed")
+
+    if args.min_stars < 0:
+        args.min_stars = 0
 
 
 
