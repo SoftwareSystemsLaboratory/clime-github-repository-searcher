@@ -3,7 +3,6 @@ from argparse import ArgumentParser, Namespace
 from pandas import DataFrame
 from requests import Response, get, post
 from progress.bar import Bar
-from progress.spinner import Spinner
 
 def get_argparse() -> Namespace:
     parser: ArgumentParser = ArgumentParser(
