@@ -7,11 +7,6 @@ from datetime import datetime
 
 def get_argparse() -> Namespace:
     parser: ArgumentParser = ArgumentParser(
-        # TODO: Add program name
-        # TODO: Choose either Computation or Collection
-        # TODO: Add program usage
-        # TODO: Add program description
-        # TODO: Add program epilog
         prog="SSL Metrics GitHub Repository Searcher",
         usage="A utility to perform advanced searching on GitHub using both the REST and GraphQL APIs",
         description="This utility utilizes both the GitHub REST and GraphQL APIs to allow for the advanced searching of repositories hosted on GitHub",
