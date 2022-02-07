@@ -7,8 +7,10 @@ from datetime import datetime
 
 def get_argparse() -> Namespace:
     parser: ArgumentParser = ArgumentParser(
-        prog="SSL Metrics GitHub Repository Information",
-        usage="Gather information about a GitHub from the GitHub GraphQL API",
+        prog="SSL Metrics GitHub Repository Searcher",
+        usage="A utility to perform advanced searching on GitHub using both the REST and GraphQL APIs",
+        description="This utility utilizes both the GitHub REST and GraphQL APIs to allow for the advanced searching of repositories hosted on GitHub",
+        epilog="Program created by Nicholas M. Synovic and George K. Thiruvathukal",
     )
     parser.add_argument(
         "-r",

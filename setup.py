@@ -1,15 +1,15 @@
 from setuptools import setup
 
-from ssl_metrics_github_repository_information import version
+from ssl_metrics_github_repository_searcher import version
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="ssl-metrics-github-repository-information",
-    packages=["ssl_metrics_github_repository_information"],
+    name="ssl-metrics-github-repository-searcher",
+    packages=["ssl_metrics_github_repository_searcher"],
     version=version.version(),
-    description="SSL Metrics - GitHub Repository Scraper",
+    description="SSL Metrics - GitHub Repository Searcher",
     author="Software and Systems Laboratory - Loyola University Chicago",
     author_email="ssl-metrics@ssl.luc.edu",
     license="BSD",
@@ -17,8 +17,8 @@ setup(
     long_description_content_type="text/markdown",
     url="https://ssl.cs.luc.edu/projects/metricsDashboard",
     project_urls={
-        "Bug Tracker": "https://github.com/SoftwareSystemsLaboratory/ssl-metrics-REPOSITORY-NAME/issues",
-        "GitHub Repository": "https://github.com/SoftwareSystemsLaboratory/ssl-metrics-REPOSITORY-NAME",
+        "Bug Tracker": "https://github.com/SoftwareSystemsLaboratory/ssl-metrics-repository-searcher/issues",
+        "GitHub Repository": "https://github.com/SoftwareSystemsLaboratory/ssl-metrics-repository-searcher",
     },
     keywords=[
         "bus factor",
@@ -66,7 +66,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "ssl-metrics-github-repository-information-collect = ssl_metrics_github_repository_information.main:main",
+            "ssl-metrics-github-repository-searcher-search = ssl_metrics_github_repository_searcher.main:main",
         ]
     },
 )
