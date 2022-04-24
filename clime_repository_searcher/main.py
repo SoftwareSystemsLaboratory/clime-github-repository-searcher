@@ -146,7 +146,7 @@ def analyzeJSON(
 def main() -> None:
     args: Namespace = mainArgs()
     if args.version:
-        print(f"clime-repository-searcher version {version()}")
+        print(f"clime-gh-repository-searcher version {version()}")
         quit(0)
 
     if (args.repository is None) and (args.topic is None):
@@ -265,7 +265,7 @@ def main() -> None:
                 else:
                     currentPage += 1
 
-    flat.T.to_json(args.output)
+    flat.T.to_json(args.output, indent=4)
 
 
 if __name__ == "__main__":
