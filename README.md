@@ -1,5 +1,8 @@
 # CLIME GitHub Repository Searcher
 
+[![Release Project](https://github.com/SoftwareSystemsLaboratory/clime-commits/actions/workflows/release.yml/badge.svg)](https://github.com/SoftwareSystemsLaboratory/clime-commits/actions/workflows/release.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5999530.svg)](https://doi.org/10.5281/zenodo.5999530)
+
 > A utility to perform advanced searching on GitHub using both the REST and GraphQL APIs
 
 ## Table of Contents
