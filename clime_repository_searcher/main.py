@@ -1,4 +1,4 @@
-from argparse import  Namespace
+from argparse import Namespace
 
 from pandas import DataFrame
 from progress.bar import Bar
@@ -9,7 +9,17 @@ from clime_repository_searcher.version import version
 
 
 def callREST(
-    maxStars: int, minStars: int, maxForks: int, minForks: int, topic: str, minCreationDate:str, maxCreationDate:str, minPushedDate:str, maxPushedDate:str, token: str, page: int = 1,
+    maxStars: int,
+    minStars: int,
+    maxForks: int,
+    minForks: int,
+    topic: str,
+    minCreationDate: str,
+    maxCreationDate: str,
+    minPushedDate: str,
+    maxPushedDate: str,
+    token: str,
+    page: int = 1,
 ) -> Response:
     apiURL: str = f"https://api.github.com/search/repositories?q=stars:{minStars}..{maxStars}+forks:{minForks}..{maxForks}+created:{minCreationDate}..{maxCreationDate}+pushed:{minPushedDate}..{maxPushedDate}+topic:{topic}&sort=stars&per_page=100&page={page}"
     requestHeaders: dict = {
