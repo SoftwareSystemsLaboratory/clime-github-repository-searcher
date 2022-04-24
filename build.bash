@@ -6,4 +6,4 @@ python -m build
 pip install dist/clime_*
 
 echo
-echo"Done building"
+echo "Done building"
