@@ -1,15 +1,15 @@
 from setuptools import setup
 
-from ssl_metrics_github_repository_searcher import version
+from clime_repository_searcher import version
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="ssl-metrics-github-repository-searcher",
-    packages=["ssl_metrics_github_repository_searcher"],
+    name="clime-github-repository-searcher",
+    packages=["clime_repository_searcher"],
     version=version.version(),
-    description="SSL Metrics - GitHub Repository Searcher",
+    description="CLIME - GitHub Repository Searcher",
     author="Software and Systems Laboratory - Loyola University Chicago",
     author_email="ssl-metrics@ssl.luc.edu",
     license="BSD",
@@ -17,8 +17,8 @@ setup(
     long_description_content_type="text/markdown",
     url="https://ssl.cs.luc.edu/projects/metricsDashboard",
     project_urls={
-        "Bug Tracker": "https://github.com/SoftwareSystemsLaboratory/ssl-metrics-repository-searcher/issues",
-        "GitHub Repository": "https://github.com/SoftwareSystemsLaboratory/ssl-metrics-repository-searcher",
+        "Bug Tracker": "https://github.com/SoftwareSystemsLaboratory/clime-github-repository-searcher/issues",
+        "GitHub Repository": "https://github.com/SoftwareSystemsLaboratory/clime-github-repository-searcher",
     },
     keywords=[
         "bus factor",
@@ -66,7 +66,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "ssl-metrics-github-repository-searcher-search = ssl_metrics_github_repository_searcher.main:main",
+            "clime-github-repository-searcher = clime_repository_searcher.main:main",
         ]
     },
 )

@@ -1,160 +1,11 @@
-from argparse import ArgumentParser, Namespace
+from argparse import  Namespace
 
 from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response, get, post
-from datetime import datetime
 
-def get_argparse() -> Namespace:
-    parser: ArgumentParser = ArgumentParser(
-        prog="SSL Metrics GitHub Repository Searcher",
-        usage="A utility to perform advanced searching on GitHub using both the REST and GraphQL APIs",
-        description="This utility utilizes both the GitHub REST and GraphQL APIs to allow for the advanced searching of repositories hosted on GitHub",
-        epilog="Program created by Nicholas M. Synovic and George K. Thiruvathukal",
-    )
-    parser.add_argument(
-        "-r",
-        "--repository",
-        help="A specific repository to be analyzed. Must be in format OWNER/REPO",
-        type=str,
-        required=False,
-        default=None,
-    )
-    parser.add_argument(
-        "--topic",
-        help="Topic to scrape (up to) the top 1000 repositories from",
-        type=str,
-        required=False,
-        default=None,
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        help="JSON file to dump data to",
-        type=str,
-        required=True,
-    )
-    parser.add_argument(
-        "-t",
-        "--token",
-        help="GitHub personal access token",
-        type=str,
-        required=True,
-    )
-    parser.add_argument(
-        "--min-stars",
-        help="Minimum number of stars a repository must have",
-        type=int,
-        required=False,
-        default=0,
-    )
-    parser.add_argument(
-        "--max-stars",
-        help="Maximum number of stars a repository must have",
-        type=int,
-        required=False,
-        default=1000000000,
-    )
-    parser.add_argument(
-        "--min-commits",
-        help="Minimum number of commits a repository must have",
-        type=int,
-        required=False,
-        default=0,
-    )
-    parser.add_argument(
-        "--max-commits",
-        help="Maximum number of commits a repository must have",
-        type=int,
-        required=False,
-        default=1000000000,
-    )
-    parser.add_argument(
-        "--min-issues",
-        help="Minimum number of issues a repository must have",
-        type=int,
-        required=False,
-        default=0,
-    )
-    parser.add_argument(
-        "--max-issues",
-        help="Maximum number of issues a repository must have",
-        type=int,
-        required=False,
-        default=1000000000,
-    )
-    parser.add_argument(
-        "--min-pull-requests",
-        help="Minimum number of pull requests a repository must have",
-        type=int,
-        required=False,
-        default=0,
-    )
-    parser.add_argument(
-        "--max-pull-requests",
-        help="Maximum number of pull requests a repository must have",
-        type=int,
-        required=False,
-        default=1000000000,
-    )
-    parser.add_argument(
-        "--min-forks",
-        help="Minimum number of forks a repository must have",
-        type=int,
-        required=False,
-        default=0,
-    )
-    parser.add_argument(
-        "--max-forks",
-        help="Maximum number of forks a repository must have",
-        type=int,
-        required=False,
-        default=1000000000,
-    )
-    parser.add_argument(
-        "--min-watchers",
-        help="Minimum number of watchers a repository must have",
-        type=int,
-        required=False,
-        default=0,
-    )
-    parser.add_argument(
-        "--max-watchers",
-        help="Maximum number of watchers a repository must have",
-        type=int,
-        required=False,
-        default=1000000000,
-    )
-    parser.add_argument(
-        "--min-created-date",
-        help="Minimum date of creation a repository must have",
-        type=str,
-        required=False,
-        default="1970-01-01",
-    )
-    parser.add_argument(
-        "--max-created-date",
-        help="Maximum date of creation a repository must have",
-        type=str,
-        required=False,
-        default=datetime.now().strftime("%Y-%m-%d"),
-    )
-    parser.add_argument(
-        "--min-pushed-date",
-        help="Minimum date of the latest push a repository must have",
-        type=str,
-        required=False,
-        default="1970-01-01",
-    )
-    parser.add_argument(
-        "--max-pushed-date",
-        help="Maximum date of the latest push a repository must have",
-        type=str,
-        required=False,
-        default=datetime.now().strftime("%Y-%m-%d"),
-    )
-
-    return parser.parse_args()
+from clime_repository_searcher.args import mainArgs
+from clime_repository_searcher.version import version
 
 
 def callREST(
@@ -293,7 +144,10 @@ def analyzeJSON(
 
 
 def main() -> None:
-    args: Namespace = get_argparse()
+    args: Namespace = mainArgs()
+    if args.version:
+        print(f"clime-repository-searcher version {version()}")
+        quit(0)
 
     if (args.repository is None) and (args.topic is None):
         print("Input either a repository or a topic to analyze")
