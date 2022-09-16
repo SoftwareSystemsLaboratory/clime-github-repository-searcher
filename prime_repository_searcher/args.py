@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 
-name: str = "CLIME"
+name: str = "PRIME"
 authors: list = [
     "Nicholas M. Synovic",
     "Matthew Hyatt",

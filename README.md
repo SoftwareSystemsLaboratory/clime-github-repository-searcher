@@ -1,13 +1,13 @@
-# CLIME GitHub Repository Searcher
+# PRIME GitHub Repository Searcher
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6480691.svg)](https://doi.org/10.5281/zenodo.6480691)
-[![Release Project](https://github.com/SoftwareSystemsLaboratory/clime-commits/actions/workflows/release.yml/badge.svg)](https://github.com/SoftwareSystemsLaboratory/clime-commits/actions/workflows/release.yml)
+[![Release Project](https://github.com/SoftwareSystemsLaboratory/prime-github-repository-searcher/actions/workflows/release.yml/badge.svg)](https://github.com/SoftwareSystemsLaboratory/prime-github-repository-searcher/actions/workflows/release.yml)
 
 > A utility to perform advanced searching on GitHub using both the REST and GraphQL APIs
 
 ## Table of Contents
 
-- [CLIME GitHub Repository Searcher](#clime-github-repository-searcher)
+- [PRIME GitHub Repository Searcher](#prime-github-repository-searcher)
   - [Table of Contents](#table-of-contents)
   - [About](#about)
     - [Licensing](#licensing)
@@ -29,15 +29,15 @@ This project is licensed under the BSD-3-Clause. See the [LICENSE](LICENSE) for 
 
 You can install the tool from PyPi with one of the following one liners:
 
-- `pip install clime-metrics`
-- `pip install clime-github-repository-searcher`
+- `pip install prime-metrics`
+- `pip install prime-github-repository-searcher`
 
 ### Command Line Arguements
 
-`clime-github-repository-searcher -h`
+`prime-github-repository-searcher -h`
 
 ``` shell
-usage: CLIME GitHub Repository Searcher [-h] [-r REPOSITORY] [--topic TOPIC]
+usage: PRIME GitHub Repository Searcher [-h] [-r REPOSITORY] [--topic TOPIC]
                                         -o OUTPUT -t TOKEN
                                         [--min-stars MIN_STARS]
                                         [--max-stars MAX_STARS]

@@ -1,24 +1,24 @@
 from setuptools import setup
 
-from clime_repository_searcher import version
+from prime_repository_searcher import version
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="clime-repository-searcher",
-    packages=["clime_repository_searcher"],
+    name="prime-repository-searcher",
+    packages=["prime_repository_searcher"],
     version=version.version(),
-    description="CLIME - Repository Searcher",
+    description="PRIME - Repository Searcher",
     author="Software and Systems Laboratory - Loyola University Chicago",
-    author_email="ssl-metrics@ssl.luc.edu",
+    # author_email="ssl-metrics@ssl.luc.edu",
     license="BSD",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://ssl.cs.luc.edu/projects/metricsDashboard",
+    # url="https://ssl.cs.luc.edu/projects/metricsDashboard",
     project_urls={
-        "Bug Tracker": "https://github.com/SoftwareSystemsLaboratory/clime-repository-searcher/issues",
-        "GitHub Repository": "https://github.com/SoftwareSystemsLaboratory/clime-repository-searcher",
+        "Bug Tracker": "https://github.com/SoftwareSystemsLaboratory/prime-github-repository-searcher/issues",
+        "GitHub Repository": "https://github.com/SoftwareSystemsLaboratory/prime-github-repository-searcher",
     },
     keywords=[
         "bugzilla",
@@ -87,7 +87,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "clime-gh-repository-searcher = clime_repository_searcher.main:main",
+            "prime-gh-repository-searcher = prime_repository_searcher.main:main",
         ]
     },
 )

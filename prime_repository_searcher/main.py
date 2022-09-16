@@ -4,8 +4,8 @@ from pandas import DataFrame
 from progress.bar import Bar
 from requests import Response, get, post
 
-from clime_repository_searcher.args import mainArgs
-from clime_repository_searcher.version import version
+from prime_repository_searcher.args import mainArgs
+from prime_repository_searcher.version import version
 
 
 def callREST(
@@ -24,7 +24,7 @@ def callREST(
     apiURL: str = f"https://api.github.com/search/repositories?q=stars:{minStars}..{maxStars}+forks:{minForks}..{maxForks}+created:{minCreationDate}..{maxCreationDate}+pushed:{minPushedDate}..{maxPushedDate}+topic:{topic}&sort=stars&per_page=100&page={page}"
     requestHeaders: dict = {
         "Accept": "application/vnd.github.v3+json",
-        "User-Agent": "ssl-metrics-github-repository-information",
+        "User-Agent": "prime-github-repository-information",
         "Authorization": f"token {token}",
     }
 
@@ -156,7 +156,7 @@ def analyzeJSON(
 def main() -> None:
     args: Namespace = mainArgs()
     if args.version:
-        print(f"clime-gh-repository-searcher version {version()}")
+        print(f"prime-gh-repository-searcher version {version()}")
         quit(0)
 
     if (args.repository is None) and (args.topic is None):
